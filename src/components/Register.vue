@@ -1,10 +1,10 @@
 <template>
 
-<div class="form-signin  w-100 m-auto">
+<div class="form-signin  w-100 m-auto center-box">
     <div class="alert " :class="{ 'alert-success': !alert.hasError, 'alert-danger': alert.hasError }" role="alert"  v-if="alert.message != '' ">
         {{alert.message}}
     </div>
-    <h3 class="mb-3 fw-normal">Registro de usuario</h3>
+    <p class="h3 mb-3 text-center fw-normal">Registro de usuario</p>
     <div class="form-floating mb-3">
         <input type="text" class="form-control" v-model="name" id="floatingName" placeholder="nombre estudiante">
         <label for="floatingName">Nombre Estudiante</label>
@@ -25,10 +25,9 @@
         <label for="floatingSelect">Seleccione el tipo de usuario</label>
     </div>
     <button class="w-100 btn btn-lg btn-primary mb-3" @click="createUser()" >Registrar</button>
-    <a class="icon-link text-muted" href="/">
-        Login
-        <svg class="bi" aria-hidden="true"><use xlink:href="#arrow-left"></use></svg>
-    </a>
+    <p class="text-center fw-medium text-muted">
+        <a class="text-decoration-none" href="/">Volver al login</a>
+    </p>
     
 </div>  
 
@@ -77,5 +76,13 @@ export default {
 .form-signin {
     max-width: 330px;
     padding: 15px;
+}
+
+.center-box{
+    margin-top: 15% !important;
+    border: 1px solid;
+    border-color: #F0F0F0;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
 }
 </style>
