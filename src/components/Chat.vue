@@ -14,10 +14,12 @@
             <div class="col-md-4 bg-white ">
                 <div class="chat-message">
                     <ul class="chat" v-for="(chat, index) in dataChats" v-bind:key="index">
-                        
-                        
-                        <li class="clearfix" :class="{ 'right': (chat.user.id == this.user_id ), 'left': !(chat.user.id == this.user_id ) }">
-                            <span class="chat-img" :class="[{ 'pull-right': (chat.user.id == this.user_id ) }, 'pull-left']">
+
+
+                        <li class="clearfix"
+                            :class="{ 'right': (chat.user.id == this.user_id), 'left': !(chat.user.id == this.user_id) }">
+                            <span class="chat-img"
+                                :class="[{ 'pull-right': (chat.user.id == this.user_id) }, 'pull-left']">
                                 <img src="https://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
                             </span>
                             <div class="chat-body clearfix">
@@ -30,11 +32,11 @@
                                     </small>
                                 </div>
                                 <p>
-                                    {{chat.message}}
+                                    {{ chat.message }}
                                 </p>
                             </div>
                         </li>
-                        
+
                         <!-- <li class="right clearfix">
                             <span class="chat-img pull-right">
                                 <img src="https://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
@@ -66,7 +68,7 @@
 </template>
 
 <script>
-
+import { socket } from "@/socket";
 export default {
     name: 'chat-page',
     data() {
@@ -74,13 +76,18 @@ export default {
             dataChats: [],
             message: '',
             token: '',
-            user_id:''
+            user_id: 0
         }
     },
     created() {
-        this.checkToken()
+        socket.connect();
+        this.checkToken();
+        socket.on("new_message", (...chats) => {
+            this.dataChats = chats;
+        });
     },
     methods: {
+
         checkToken() {
             this.token = localStorage.getItem("TOKEN");
             this.user_id = localStorage.getItem("user_id");
@@ -99,16 +106,22 @@ export default {
                     this.dataChats = response.data;
                     console.log(this.dataChats)
                 })
-                .catch(({response}) => {
+                .catch(({ response }) => {
                     console.log(response)
-                    if( response.data.statusCode === 401 ) {
+                    if (response.data.statusCode === 401) {
                         this.$router.push('/')
-                    }                
+                    }
                 });
         },
         sendMessage() {
             console.log(this.message)
-            this.axios.post(
+            const payload = {
+                message: this.message,
+                user_id: Number(this.user_id)
+            }
+            console.log(payload)
+            socket.emit("event_message", payload);
+            /* this.axios.post(
                 'http://localhost:3000/chat',
                 {
                     message: this.message,
@@ -117,14 +130,13 @@ export default {
             )
                 .then((response) => {
                     console.log(response);
+                   
                     this.message = '';
-                    //this.dataChats = response.data;
-                    this.getChats();
                 })
                 .catch(() => {
                     this.alert.message = "Error al realizar el registro";
                     this.alert.hasError = true;
-                });
+                }); */
         }
     }
 }
@@ -274,11 +286,11 @@ a:focus {
     outline: 0;
 }
 
-.pull-left{
+.pull-left {
     float: left;
 }
 
-.pull-right{
+.pull-right {
     float: right;
 }
 

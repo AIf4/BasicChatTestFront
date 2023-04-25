@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { socket } from "@/socket";
 export default {
     name: 'login-page',
     data() {
@@ -35,6 +36,9 @@ export default {
                 message: ''
             }
         }
+    },
+    created() {
+        socket.disconnect();
     },
     methods:{
         login(){
