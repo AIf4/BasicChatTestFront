@@ -1,6 +1,6 @@
 <template>
     <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet"> -->
-    <div class="container mt-4">
+    <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-8 bg-white ">
                 <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MVPTGNGiI-4"
@@ -15,7 +15,7 @@
                 <div class="chat-message">
                     <ul class="chat" v-for="(chat, index) in dataChats" v-bind:key="index">
                         <li class="clearfix"
-                            :class="{ 'right': (chat.user.id == this.user_id), 'left': !(chat.user.id == this.user_id) }">
+                            :class="{ 'right': !(chat.user.id == this.user_id), 'left': (chat.user.id == this.user_id) }">
                             <span class="chat-img" :class="[{ 'pull-right': (chat.user.id == this.user_id) }, 'pull-left']">
                                 <img src="https://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
                             </span>
@@ -78,6 +78,7 @@ export default {
         socket.connect();
         this.checkToken();
         socket.on("new_message", (chat) => {
+            console.log(chat)
             this.dataChats.push(chat);
         });
     },
