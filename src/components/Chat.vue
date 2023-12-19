@@ -1,6 +1,6 @@
 <template>
     <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet"> -->
-    <div class="container mt-4">
+    <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-md-8 bg-white ">
                 <iframe width="100%" height="100%" src="https://www.youtube.com/embed/MVPTGNGiI-4"
@@ -14,10 +14,9 @@
             <div class="col-md-4 bg-white ">
                 <div class="chat-message">
                     <ul class="chat" v-for="(chat, index) in dataChats" v-bind:key="index">
-                        
-                        
-                        <li class="clearfix" :class="{ 'right': (chat.user.id == this.user_id ), 'left': !(chat.user.id == this.user_id ) }">
-                            <span class="chat-img" :class="[{ 'pull-right': (chat.user.id == this.user_id ) }, 'pull-left']">
+                        <li class="clearfix"
+                            :class="{ 'right': !(chat.user.id == this.user_id), 'left': (chat.user.id == this.user_id) }">
+                            <span class="chat-img" :class="[{ 'pull-right': (chat.user.id == this.user_id) }, 'pull-left']">
                                 <img src="https://bootdey.com/img/Content/user_3.jpg" alt="User Avatar">
                             </span>
                             <div class="chat-body clearfix">
@@ -30,34 +29,32 @@
                                     </small>
                                 </div>
                                 <p>
-                                    {{chat.message}}
+                                    {{ chat.message }}
                                 </p>
                             </div>
                         </li>
-                        
-                        <!-- <li class="right clearfix">
-                            <span class="chat-img pull-right">
-                                <img src="https://bootdey.com/img/Content/user_1.jpg" alt="User Avatar">
-                            </span>
-                            <div class="chat-body clearfix">
-                                <div class="header">
-                                    <strong class="primary-font">Sarah</strong>
-                                    <small class="pull-right text-muted"><font-awesome-icon :icon="['fas', 'clock']" /> 13 mins ago</small>
-                                </div>
-                                <p>
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur bibendum ornare
-                                    dolor, quis ullamcorper ligula sodales at.
-                                </p>
-                            </div>
-                        </li> -->
                     </ul>
                 </div>
                 <div class="chat-box bg-white">
                     <div class="input-group mb-1 w-100">
-                        <input type="text" class="form-control" v-model="message" placeholder="Escribe algo ..."
-                            aria-label="Escribe algo ..." aria-describedby="button-addon2">
-                        <button class="btn btn-outline-primary" type="button" id="button-addon2"
-                            @click="sendMessage()"><font-awesome-icon :icon="['fass', 'paper-plane']" /></button>
+                        <form @submit.prevent="sendMessage" class="w-100">
+                            
+                            <div class="row">
+                                <div class="col-10">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" v-model="message" placeholder="Escribe algo ..."
+                                    aria-label="Escribe algo ..." aria-describedby="button-addon2">
+                                        <label for="floatingInputGroup2">Escribe algo ...</label>
+                                    </div>
+                                </div>
+                                <div class="col-2 d-grid">
+                                    <button class="btn btn-outline-primary " type="submit" id="button-addon2">
+                                        <font-awesome-icon :icon="['fass', 'paper-plane']" />
+                                    </button>
+                                </div>
+                            </div>
+
+                        </form>
                     </div>
                 </div>
             </div>
@@ -66,7 +63,7 @@
 </template>
 
 <script>
-
+import { socket } from "@/socket";
 export default {
     name: 'chat-page',
     data() {
@@ -74,18 +71,23 @@ export default {
             dataChats: [],
             message: '',
             token: '',
-            user_id:''
+            user_id: 0
         }
     },
     created() {
-        this.checkToken()
+        socket.connect();
+        this.checkToken();
+        socket.on("new_message", (chat) => {
+            console.log(chat)
+            this.dataChats.push(chat);
+        });
     },
     methods: {
+
         checkToken() {
             this.token = localStorage.getItem("TOKEN");
             this.user_id = localStorage.getItem("user_id");
-            if (!this.token) this.$router.push('/')
-            //let jwtpass = jwt.verify(this.token, 'secret-key');
+            if (!this.token) this.$router.push('/');
             this.getChats();
         },
         getChats() {
@@ -94,37 +96,22 @@ export default {
                     headers: { Authorization: `Bearer ${this.token}` }
                 }
             )
-                .then((response) => {
-                    console.log(response.data);
-                    this.dataChats = response.data;
-                    console.log(this.dataChats)
+                .then(({data}) => {
+                    this.dataChats = data;
                 })
-                .catch(({response}) => {
-                    console.log(response)
-                    if( response.data.statusCode === 401 ) {
-                        this.$router.push('/')
-                    }                
+                .catch(({ response }) => {
+                    if (response.data.statusCode === 401) this.$router.push('/');
                 });
         },
         sendMessage() {
-            console.log(this.message)
-            this.axios.post(
-                'http://localhost:3000/chat',
-                {
-                    message: this.message,
-                    user: this.user_id
-                }
-            )
-                .then((response) => {
-                    console.log(response);
-                    this.message = '';
-                    //this.dataChats = response.data;
-                    this.getChats();
-                })
-                .catch(() => {
-                    this.alert.message = "Error al realizar el registro";
-                    this.alert.hasError = true;
-                });
+
+            if(!this.message) return;
+
+            socket.emit("event_message", {
+                message: this.message,
+                user: this.user_id
+            });
+            this.message = '';
         }
     }
 }
@@ -274,11 +261,11 @@ a:focus {
     outline: 0;
 }
 
-.pull-left{
+.pull-left {
     float: left;
 }
 
-.pull-right{
+.pull-right {
     float: right;
 }
 
